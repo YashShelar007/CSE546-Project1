@@ -6,10 +6,10 @@ import json
 import os
 import subprocess
 
-access_key = 'AKIA2JVJS47IFL3MKZYW'
-secret_key = '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'
+access_key = 'AKIA2JVJS47IPPFRZBLG'
+secret_key = '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'
 
-def get_queue_url(queue_name):
+def get_sqs_url(queue_name):
     sqs_client = boto3.client("sqs", region_name = "us-east-1", aws_access_key_id=access_key, aws_secret_access_key=secret_key)
     name = queue_name
     queue_name = sqs_client.get_queue_url(
@@ -40,30 +40,20 @@ def read_message(queue_url):
         file.close()
         return None, None
     
-def download_images(s3_bucket_name, image_name):
+def download_images_from_s3(s3_bucket_name, image_name):
     session = boto3.session.Session(aws_access_key_id=access_key, aws_secret_access_key=secret_key)
     s3_resource = session.resource("s3")
-    file_name = '/home/ubuntu/images/' + image_name
+    file_name = '/home/ubuntu/images/' + image_name + '.jpg'
     s3_resource.meta.client.download_file(s3_bucket_name,image_name,file_name)
 
-def run_classification_engine():
-    dir_path = '/home/ubuntu/images/'
-    for path in os.listdir(dir_path):
-        path = '/home/ubuntu/images/' + str(path)
-        filename = path.rsplit(".",1)[0]
-        filename = filename.rsplit("/")[4]
-        filename = '/home/ubuntu/result/'+ str(filename) + '.txt'
-        subprocess.run(['touch', filename])
-        output_file = open(filename, "w")
-        subprocess.run(('python3', './image_classification.py', path ), stdout=output_file)
-
-def test_run_classification_engine():
-    image_path = '/home/ubuntu/test-image.jpg'
-    filename = 'test-image.txt'
+def classify_images(image_name):
+    path = '/home/ubuntu/images/' + image_name + '.jpg'
+    filename = '/home/ubuntu/result/'+ image_name + '.txt'
+    subprocess.run(['touch', filename])
     output_file = open(filename, "w")
-    subprocess.run(('python3', './image_classification.py', image_path ), stdout=output_file)
+    subprocess.run(('python3', './image_classification.py', path ), stdout=output_file)
 
-def write_message(queue_url, message_body):
+def write_message_to_response(queue_url, message_body):
     sqs_client = boto3.client("sqs", region_name = "us-east-1", aws_access_key_id=access_key, aws_secret_access_key=secret_key)
     message = message_body
     response = sqs_client.send_message(
@@ -73,7 +63,25 @@ def write_message(queue_url, message_body):
    
     return response['ResponseMetadata']["HTTPStatusCode"]
 
-def delete_message(queue_url,receipt_handle):
+def send_classification_result_to_response_queue(image_name, queue_url):
+    file_name = '/home/ubuntu/result/'+ image_name + '.txt'
+    with open (file_name,'r') as f:
+        lines = f.readline()
+    lines = lines.split("\n")
+    message_body = lines[0].split(",")[1]
+    sqs_message = image_name + ":" + message_body
+    write_message_to_response(queue_url, sqs_message )
+
+def write_response_to_bucket(s3_bucket_name, image_name):
+    result_file = '/home/ubuntu/result/'+ image_name + '.txt'
+    with open (result_file, 'r') as f:
+        lines = f.readline()
+    lines = lines.split("\n")
+    message_body = image_name + "," + lines[0].split(",")[1]
+    s3_client = boto3.client("s3", aws_access_key_id=access_key, aws_secret_access_key=secret_key)
+    s3_client.put_object(Bucket = s3_bucket_name, Body=message_body, Key = image_name)
+
+def delete_message_from_resuest_queue(queue_url,receipt_handle):
     sqs_client = boto3.client("sqs", region_name = "us-east-1", aws_access_key_id=access_key, aws_secret_access_key=secret_key)
     response = sqs_client.delete_message(
         QueueUrl = queue_url,
@@ -81,54 +89,19 @@ def delete_message(queue_url,receipt_handle):
     )
     return response["ResponseMetadata"]["HTTPStatusCode"]
 
-
 def delete_image(image_name):
-    file_path = "/home/ubuntu/images/" + image_name
+    file_path = "/home/ubuntu/images/" + image_name + '.jpg'
     if os.path.exists(file_path):
         os.remove(file_path)
     else:
         print("The file does not exist")
     return True
 
-def send_classification_result_to_response_queue(image_name, queue_url):
-    path = '/home/ubuntu/images/' + str(image_name)
-    file_name = path.rsplit(".",1)[0]
-    file_name = file_name.rsplit("/")[4]
-    file_name = '/home/ubuntu/result/'+ str(file_name) + '.txt'
-    with open (file_name,'r') as f:
-        lines = f.readline()
-    lines = lines.split("\n")
-    message_body = lines[0].split(",")[1]
-    sqs_message = {image_name : message_body}
-    status_code = write_message(queue_url, sqs_message )
-    return status_code
-
-def test_send_classification_result_to_response_queue(image_name, queue_url):
-    file_name = 'test-image.txt'
-    with open (file_name,'r') as f:
-        lines = f.readline()
-    lines = lines.split("\n")
-    message_body = lines[0].split(",")[1]
-    status_code = write_message(queue_url, message_body )
-    return status_code 
-
-def write_to_bucket(s3_bucket_name, image_name):
-    path = '/home/ubuntu/images/' + str(image_name)
-    file_name = path.rsplit(".",1)[0]
-    file_name = file_name.rsplit("/")[4]
-    result_file = '/home/ubuntu/result/'+ str(file_name) + '.txt'
-    with open (result_file, 'r') as f:
-        lines = f.readline()
-    lines = lines.split("\n")
-    message_body = file_name + "," + lines[0].split(",")[1]
-    s3_client = boto3.client("s3", aws_access_key_id=access_key, aws_secret_access_key=secret_key)
-    s3_client.put_object(Bucket = s3_bucket_name, Body=message_body, Key = file_name)
-
 if __name__=="__main__":
     try:
         file = open('output_results.txt', 'a')
-        request_queue_url = get_queue_url('cloudCrowd-request')
-        response_queue_url = get_queue_url('cloudCrowd-response')
+        request_queue_url = get_sqs_url('cloudCrowd-request')
+        response_queue_url = get_sqs_url('cloudCrowd-response')
 
         input_bucket = "cloudcrowd-input"
         output_bucket = "cloudcrowd-output"
@@ -137,13 +110,14 @@ if __name__=="__main__":
         while (True):
             image_name, reciept_handle = read_message(request_queue_url)
             if image_name!=None and reciept_handle!=None :
+                image_name = image_name[0:-4]
                 file.write(f"Got message: {image_name}\n")
-                # download_images(input_bucket, image_name)
-                test_run_classification_engine()
-                test_send_classification_result_to_response_queue(image_name, response_queue_url)
-                # write_to_bucket(output_bucket, image_name)
-                delete_message(request_queue_url, reciept_handle)
-                # delete_image(image_name)
+                download_images_from_s3(input_bucket, image_name)
+                classify_images(image_name)
+                send_classification_result_to_response_queue(image_name, response_queue_url)
+                write_response_to_bucket(output_bucket, image_name)
+                delete_message_from_resuest_queue(request_queue_url, reciept_handle)
+                delete_image(image_name)
             else:
                 file.write("No images left in the queue")
                 break
