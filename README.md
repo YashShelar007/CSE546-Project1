@@ -21,11 +21,11 @@ Sougata Nayak:
  - Store the images in S3 input bucket.
  - Recieve response from the request queue and display. 
  
- AWS credentials: 
- access_key: AKIA2JVJS47IPPFRZBLG 
+ AWS credentials: /n
+ access_key: AKIA2JVJS47IPPFRZBLG /n
  secret_key: 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
  
- PEM key: 
+ PEM key: /n
  cloudcrowd
  
  Webtier URL: 
