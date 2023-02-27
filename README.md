@@ -39,7 +39,7 @@ Sougata Nayak:
  PEM key: cloudcrowd
  
  
- Webtier URL: 
+ Webtier URL: 100.25.3.37:3000
  
  
  SQS request queue: cloudCrowd-request
