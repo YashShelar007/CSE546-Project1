@@ -112,13 +112,16 @@ if __name__=="__main__":
     while(True):
         image_name, reciept_handle = read_message(request_queue_url)
         if image_name!=None and reciept_handle!=None : 
-            download_images(input_bucket, image_name)
+            # download_images(input_bucket, image_name)
+            f = open('output_results.txt', 'a')
             print(f"Classifying image: {image_name}")
-            run_classification_engine()
+            f.write(f"\nClassifying image: {image_name}")
+            f.close()
+            # run_classification_engine()
             send_classification_result_to_response_queue(image_name, response_queue_url)
-            write_to_bucket(output_bucket, image_name)
+            # write_to_bucket(output_bucket, image_name)
             delete_message(request_queue_url, reciept_handle)
-            delete_image(image_name)
+            # delete_image(image_name)
         else:
             print("No images left in the queue")
             break
