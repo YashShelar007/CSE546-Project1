@@ -18,6 +18,7 @@ def get_queue_url(queue_name):
     return queue_name["QueueUrl"]
 
 def read_message(queue_url):
+    file = open('read_message.txt', 'a')
     response = []
     sqs_client = boto3.client("sqs", region_name = "us-east-1", aws_access_key_id=access_key, aws_secret_access_key=secret_key)
     response = sqs_client.receive_message(
@@ -25,12 +26,16 @@ def read_message(queue_url):
         MaxNumberOfMessages =1, 
         WaitTimeSeconds=10,
     )
+    file.write(f"Read message {response}\n")
     if len(response.get("Messages", []))>0:
         for message in response.get("Messages", []):
             message_body = message["Body"]
         message_body = json.loads(message_body)
+        file.write(f"Message body: {message_body}\n")
+        file.close()
         return message_body["Image_Name"], message['ReceiptHandle']
     else:
+        file.close()
         return None, None
     
 # def download_images(s3_bucket_name, image_name):
@@ -123,7 +128,7 @@ if __name__=="__main__":
         file.close()
     except Exception as e:
         file = open('errors.txt', 'a')
-        file.write(e)
+        file.write(f"Found error {e}")
         file.close()
     
    
