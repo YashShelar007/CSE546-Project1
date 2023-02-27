@@ -1,6 +1,3 @@
-from fileinput import filename
-from botocore.exceptions import ClientError
-from urllib import response
 import boto3
 import json
 import os
