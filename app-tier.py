@@ -29,7 +29,6 @@ def read_message(queue_url):
         for message in response.get("Messages", []):
             message_body = message["Body"]
             message_reciet = message["ReceiptHandle"]
-        # message_body = json.loads(message_body)
         file.write(f"Message body: {message_body}\n")
         file.close()
         return message_body, message_reciet
