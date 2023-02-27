@@ -1,21 +1,21 @@
-# from fileinput import filename
-# from botocore.exceptions import ClientError
-# from urllib import response
-# import boto3
-# import json
-# import os
-# import subprocess
+from fileinput import filename
+from botocore.exceptions import ClientError
+from urllib import response
+import boto3
+import json
+import os
+import subprocess
 
-# access_key = 'AKIA2JVJS47IFL3MKZYW'
-# secret_key = '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'
+access_key = 'AKIA2JVJS47IFL3MKZYW'
+secret_key = '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'
 
-# def get_queue_url(queue_name):
-#     sqs_client = boto3.client("sqs", region_name = "us-east-1", aws_access_key_id=access_key, aws_secret_access_key=secret_key)
-#     name = queue_name
-#     queue_name = sqs_client.get_queue_url(
-#         QueueName = name
-#     )
-#     return queue_name["QueueUrl"]
+def get_queue_url(queue_name):
+    sqs_client = boto3.client("sqs", region_name = "us-east-1", aws_access_key_id=access_key, aws_secret_access_key=secret_key)
+    name = queue_name
+    queue_name = sqs_client.get_queue_url(
+        QueueName = name
+    )
+    return queue_name["QueueUrl"]
 
 # def read_message(queue_url):
 #     response = []
@@ -103,13 +103,17 @@
 #     s3_client.put_object(Bucket = s3_bucket_name, Body=message_body, Key = file_name)
 
 if __name__=="__main__":
-    f = open('output_results.txt', 'a')
-    print(f"Classifying image:")
-    f.write("Classifying an image\n")
-    f.close()
-
-    # request_queue_url = get_queue_url('cloudCrowd-request')
-    # response_queue_url = get_queue_url('cloudCrowd-response')
+    try:
+        request_queue_url = get_queue_url('cloudCrowd-request')
+        response_queue_url = get_queue_url('cloudCrowd-response')
+        f = open('output_results.txt', 'a')
+        print(f"Classifying image: Request-> {request_queue_url} response-> {response_queue_url}")
+        f.write(f"Classifying image: Request-> {request_queue_url} response-> {response_queue_url}")
+        f.close()
+    except Exception as e:
+        f = open('errors.txt', 'a')
+        f.write(e)
+        f.close()
 
     # input_bucket = "cloudcrowd-input"
     # output_bucket = "cloudcrowd-output"
