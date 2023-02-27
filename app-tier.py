@@ -57,6 +57,13 @@ def run_classification_engine():
         output_file = open(filename, "w")
         subprocess.run(('python3', './image_classification.py', path ), stdout=output_file)
 
+def test_run_classification_engine():
+    path = '/home/ubuntu/test-image.jpg'
+    filename = '/home/ubuntu/result/test-image.txt'
+    subprocess.run(['touch', filename])
+    output_file = open(filename, "w")
+    subprocess.run(('python3', './image_classification.py', path ), stdout=output_file)
+
 def write_message(queue_url, message_body):
     sqs_client = boto3.client("sqs", region_name = "us-east-1", aws_access_key_id=access_key, aws_secret_access_key=secret_key)
     message = message_body
@@ -95,6 +102,15 @@ def send_classification_result_to_response_queue(image_name, queue_url):
     message_body = lines[0].split(",")[1]
     sqs_message = {image_name : message_body}
     status_code = write_message(queue_url, sqs_message )
+    return status_code
+
+def test_send_classification_result_to_response_queue(image_name, queue_url):
+    file_name = '/home/ubuntu/result/test-image.txt'
+    with open (file_name,'r') as f:
+        lines = f.readline()
+    lines = lines.split("\n")
+    message_body = lines[0].split(",")[1]
+    status_code = write_message(queue_url, message_body )
     return status_code 
 
 def write_to_bucket(s3_bucket_name, image_name):
@@ -124,9 +140,8 @@ if __name__=="__main__":
             if image_name!=None and reciept_handle!=None :
                 file.write(f"Got message: {image_name}\n")
                 # download_images(input_bucket, image_name)
-                # run_classification_engine()
-                write_message(response_queue_url, image_name )
-                # send_classification_result_to_response_queue(image_name, response_queue_url)
+                test_run_classification_engine()
+                test_send_classification_result_to_response_queue(image_name, response_queue_url)
                 # write_to_bucket(output_bucket, image_name)
                 delete_message(request_queue_url, reciept_handle)
                 # delete_image(image_name)
