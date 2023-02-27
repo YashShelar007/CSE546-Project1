@@ -58,11 +58,10 @@ def run_classification_engine():
         subprocess.run(('python3', './image_classification.py', path ), stdout=output_file)
 
 def test_run_classification_engine():
-    path = '/home/ubuntu/test-image.jpg'
-    filename = '/home/ubuntu/result/test-image.txt'
-    subprocess.run(['touch', filename])
+    image_path = '/home/ubuntu/test-image.jpg'
+    filename = 'test-image.txt'
     output_file = open(filename, "w")
-    subprocess.run(('python3', './image_classification.py', path ), stdout=output_file)
+    subprocess.run(('python3', './image_classification.py', image_path ), stdout=output_file)
 
 def write_message(queue_url, message_body):
     sqs_client = boto3.client("sqs", region_name = "us-east-1", aws_access_key_id=access_key, aws_secret_access_key=secret_key)
@@ -105,7 +104,7 @@ def send_classification_result_to_response_queue(image_name, queue_url):
     return status_code
 
 def test_send_classification_result_to_response_queue(image_name, queue_url):
-    file_name = '/home/ubuntu/result/test-image.txt'
+    file_name = 'test-image.txt'
     with open (file_name,'r') as f:
         lines = f.readline()
     lines = lines.split("\n")
