@@ -1,11 +1,17 @@
 # CSE546-Project1
 
 Group members:
+
 Yash Shelar
+
 Sougata Nayak
+
 Anvita Lingampalli
 
+
+
 Tasks:
+
 Yash Shelar:
 - Implemented functionality for SQS request and response queues
 - Created autoscaling policy
@@ -20,20 +26,26 @@ Sougata Nayak:
  - Implemented the code which receives the image files from workload generator
  - Store the images in S3 input bucket.
  - Recieve response from the request queue and display. 
+
+
  
  AWS credentials:
- access_key: AKIA2JVJS47IPPFRZBLG
- secret_key: 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
  
- PEM key:
+ access_key= AKIA2JVJS47IPPFRZBLG
  
- cloudcrowd
+ secret_key= FSgOYwvhB6+Hh+Rifijpo4GTTt4/eM1D9YaREQ5Z
+ 
+ 
+ PEM key: cloudcrowd
+ 
  
  Webtier URL: 
+ 
  
  SQS request queue: cloudCrowd-request
  
  SQS response queue: cloudCrowd-response
+ 
  
  S3 input bucket: cloudcrowd-input
  
