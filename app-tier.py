@@ -17,21 +17,21 @@ def get_queue_url(queue_name):
     )
     return queue_name["QueueUrl"]
 
-# def read_message(queue_url):
-#     response = []
-#     sqs_client = boto3.client("sqs", region_name = "us-east-1", aws_access_key_id=access_key, aws_secret_access_key=secret_key)
-#     response = sqs_client.receive_message(
-#         QueueUrl = queue_url,
-#         MaxNumberOfMessages =1, 
-#         WaitTimeSeconds=10,
-#     )
-#     if len(response.get("Messages", []))>0:
-#         for message in response.get("Messages", []):
-#             message_body = message["Body"]
-#         message_body = json.loads(message_body)
-#         return message_body["Image_Name"], message['ReceiptHandle']
-#     else:
-#         return None, None
+def read_message(queue_url):
+    response = []
+    sqs_client = boto3.client("sqs", region_name = "us-east-1", aws_access_key_id=access_key, aws_secret_access_key=secret_key)
+    response = sqs_client.receive_message(
+        QueueUrl = queue_url,
+        MaxNumberOfMessages =1, 
+        WaitTimeSeconds=10,
+    )
+    if len(response.get("Messages", []))>0:
+        for message in response.get("Messages", []):
+            message_body = message["Body"]
+        message_body = json.loads(message_body)
+        return message_body["Image_Name"], message['ReceiptHandle']
+    else:
+        return None, None
     
 # def download_images(s3_bucket_name, image_name):
 #     session = boto3.session.Session(aws_access_key_id=access_key, aws_secret_access_key=secret_key)
@@ -104,34 +104,36 @@ def get_queue_url(queue_name):
 
 if __name__=="__main__":
     try:
+        file = open('output_results.txt', 'a')
         request_queue_url = get_queue_url('cloudCrowd-request')
         response_queue_url = get_queue_url('cloudCrowd-response')
-        f = open('output_results.txt', 'a')
-        print(f"Classifying image: Request-> {request_queue_url} response-> {response_queue_url}")
-        f.write(f"Classifying image: Request-> {request_queue_url} response-> {response_queue_url}")
-        f.close()
+
+        input_bucket = "cloudcrowd-input"
+        output_bucket = "cloudcrowd-output"
+        file.write(f"Request-> {request_queue_url} response-> {response_queue_url}\n")
+
+        while (True):
+            image_name, reciept_handle = read_message(request_queue_url)
+            if image_name!=None and reciept_handle!=None :
+                file.write(f"Got message: {image_name}\n")
+            else:
+                file.write("No images left in the queue")
+                break
+        
+        file.close()
     except Exception as e:
-        f = open('errors.txt', 'a')
-        f.write(e)
-        f.close()
-
-    # input_bucket = "cloudcrowd-input"
-    # output_bucket = "cloudcrowd-output"
+        file = open('errors.txt', 'a')
+        file.write(e)
+        file.close()
     
-    # while(True):
-    #     image_name, reciept_handle = read_message(request_queue_url)
-    #     if image_name!=None and reciept_handle!=None : 
-    #         # download_images(input_bucket, image_name)
-    #         f = open('output_results.txt', 'a')
-    #         print(f"Classifying image: {image_name}")
-    #         f.write(f"\nClassifying image: {image_name}")
-    #         f.close()
-    #         # run_classification_engine()
-    #         send_classification_result_to_response_queue(image_name, response_queue_url)
-    #         # write_to_bucket(output_bucket, image_name)
-    #         delete_message(request_queue_url, reciept_handle)
-    #         # delete_image(image_name)
-    #     else:
-    #         print("No images left in the queue")
-    #         break
-
+   
+            # # download_images(input_bucket, image_name)
+            # f = open('output_results.txt', 'a')
+            # print(f"Classifying image: {image_name}")
+            # f.write(f"\nClassifying image: {image_name}")
+            # f.close()
+            # # run_classification_engine()
+            # send_classification_result_to_response_queue(image_name, response_queue_url)
+            # # write_to_bucket(output_bucket, image_name)
+            # delete_message(request_queue_url, reciept_handle)
+            # # delete_image(image_name)
