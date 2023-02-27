@@ -21,19 +21,22 @@ Sougata Nayak:
  - Store the images in S3 input bucket.
  - Recieve response from the request queue and display. 
  
- AWS credentials: /n
- access_key: AKIA2JVJS47IPPFRZBLG /n
+ AWS credentials:
+ access_key: AKIA2JVJS47IPPFRZBLG
  secret_key: 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
  
- PEM key: /n
+ PEM key:
+ 
  cloudcrowd
  
  Webtier URL: 
  
  SQS request queue: cloudCrowd-request
+ 
  SQS response queue: cloudCrowd-response
  
  S3 input bucket: cloudcrowd-input
+ 
  S3 output bucket: cloudcrowd-output
  
  
