@@ -3,11 +3,12 @@ import json
 import os
 import subprocess
 
-access_key = 'AKIATC5WSOKMQ566W754'
-secret_key = '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'
+# access_key = ''
+# secret_key = ''
+# , aws_access_key_id=access_key, aws_secret_access_key=secret_key
 
 def get_sqs_url(queue_name):
-    sqs_client = boto3.client("sqs", region_name = "us-east-1", aws_access_key_id=access_key, aws_secret_access_key=secret_key)
+    sqs_client = boto3.client("sqs", region_name = "us-east-1")
     name = queue_name
     queue_name = sqs_client.get_queue_url(
         QueueName = name
@@ -17,7 +18,7 @@ def get_sqs_url(queue_name):
 def read_message(queue_url):
     file = open('read_message.txt', 'a')
     response = []
-    sqs_client = boto3.client("sqs", region_name = "us-east-1", aws_access_key_id=access_key, aws_secret_access_key=secret_key)
+    sqs_client = boto3.client("sqs", region_name = "us-east-1")
     response = sqs_client.receive_message(
         QueueUrl = queue_url,
         MaxNumberOfMessages =1, 
@@ -37,7 +38,7 @@ def read_message(queue_url):
         return None, None
     
 def download_images_from_s3(s3_bucket_name, image_name):
-    session = boto3.session.Session(aws_access_key_id=access_key, aws_secret_access_key=secret_key)
+    session = boto3.session.Session()
     s3_resource = session.resource("s3")
     file_name = '/home/ubuntu/images/' + image_name
     s3_resource.meta.client.download_file(s3_bucket_name,image_name,file_name)
@@ -51,7 +52,7 @@ def classify_images(image_name):
     subprocess.run(('python3', './image_classification.py', path ), stdout=output_file)
 
 def write_message_to_response(queue_url, message_body):
-    sqs_client = boto3.client("sqs", region_name = "us-east-1", aws_access_key_id=access_key, aws_secret_access_key=secret_key)
+    sqs_client = boto3.client("sqs", region_name = "us-east-1")
     message = message_body
     response = sqs_client.send_message(
         QueueUrl = queue_url,
@@ -77,11 +78,11 @@ def write_response_to_bucket(s3_bucket_name, image_name):
         lines = f.readline()
     lines = lines.split("\n")
     message_body = image_name + "," + lines[0].split(",")[1]
-    s3_client = boto3.client("s3", aws_access_key_id=access_key, aws_secret_access_key=secret_key)
+    s3_client = boto3.client("s3")
     s3_client.put_object(Bucket = s3_bucket_name, Body=message_body, Key = image_name)
 
 def delete_message_from_resuest_queue(queue_url,receipt_handle):
-    sqs_client = boto3.client("sqs", region_name = "us-east-1", aws_access_key_id=access_key, aws_secret_access_key=secret_key)
+    sqs_client = boto3.client("sqs", region_name = "us-east-1")
     response = sqs_client.delete_message(
         QueueUrl = queue_url,
         ReceiptHandle=receipt_handle,
@@ -98,6 +99,12 @@ def delete_image(image_name):
 
 if __name__=="__main__":
     try:
+        # with open ('access.txt', 'r') as f:
+        #     access_key = f.readline()
+
+        # with open ('secret.txt', 'r') as f:
+        #     secret_key = f.readline()
+
         file = open('output_results.txt', 'a')
         request_queue_url = get_sqs_url('cloudCrowd-request')
         response_queue_url = get_sqs_url('cloudCrowd-response')
