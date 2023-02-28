@@ -31,9 +31,9 @@ Sougata Nayak:
  
  AWS credentials:
  
- access_key= AKIA2JVJS47IPPFRZBLG
+ access_key= 
  
- secret_key= FSgOYwvhB6+Hh+Rifijpo4GTTt4/eM1D9YaREQ5Z
+ secret_key= 
  
  
  PEM key: cloudcrowd
