@@ -3,8 +3,8 @@ import json
 import os
 import subprocess
 
-access_key = 'AKIA2JVJS47IPPFRZBLG'
-secret_key = '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'
+access_key = 'AKIA3IFVW2XOUMNMV345'
+secret_key = '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'
 
 def get_sqs_url(queue_name):
     sqs_client = boto3.client("sqs", region_name = "us-east-1", aws_access_key_id=access_key, aws_secret_access_key=secret_key)
@@ -99,8 +99,8 @@ if __name__=="__main__":
         request_queue_url = get_sqs_url('cloudCrowd-request')
         response_queue_url = get_sqs_url('cloudCrowd-response')
 
-        input_bucket = "cloudcrowd-input"
-        output_bucket = "cloudcrowd-output"
+        input_bucket = "cloudcrowd-input-bucket"
+        output_bucket = "cloudcrowd-output-bucket"
         file.write(f"Request-> {request_queue_url} response-> {response_queue_url}\n")
 
         while (True):
