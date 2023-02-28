@@ -39,12 +39,13 @@ def read_message(queue_url):
 def download_images_from_s3(s3_bucket_name, image_name):
     session = boto3.session.Session(aws_access_key_id=access_key, aws_secret_access_key=secret_key)
     s3_resource = session.resource("s3")
-    file_name = '/home/ubuntu/images/' + image_name + '.jpg'
+    file_name = '/home/ubuntu/images/' + image_name
     s3_resource.meta.client.download_file(s3_bucket_name,image_name,file_name)
 
 def classify_images(image_name):
-    path = '/home/ubuntu/images/' + image_name + '.jpg'
-    filename = '/home/ubuntu/result/'+ image_name + '.txt'
+    path = '/home/ubuntu/images/' + image_name
+    image_file_name = image_name.split(".")[0]
+    filename = '/home/ubuntu/result/'+ image_file_name + '.txt'
     subprocess.run(['touch', filename])
     output_file = open(filename, "w")
     subprocess.run(('python3', './image_classification.py', path ), stdout=output_file)
@@ -60,7 +61,8 @@ def write_message_to_response(queue_url, message_body):
     return response['ResponseMetadata']["HTTPStatusCode"]
 
 def send_classification_result_to_response_queue(image_name, queue_url):
-    file_name = '/home/ubuntu/result/'+ image_name + '.txt'
+    image_file_name = image_name.split(".")[0]
+    file_name = '/home/ubuntu/result/'+ image_file_name + '.txt'
     with open (file_name,'r') as f:
         lines = f.readline()
     lines = lines.split("\n")
@@ -69,7 +71,8 @@ def send_classification_result_to_response_queue(image_name, queue_url):
     write_message_to_response(queue_url, sqs_message )
 
 def write_response_to_bucket(s3_bucket_name, image_name):
-    result_file = '/home/ubuntu/result/'+ image_name + '.txt'
+    image_file_name = image_name.split(".")[0]
+    result_file = '/home/ubuntu/result/'+ image_file_name + '.txt'
     with open (result_file, 'r') as f:
         lines = f.readline()
     lines = lines.split("\n")
@@ -86,7 +89,7 @@ def delete_message_from_resuest_queue(queue_url,receipt_handle):
     return response["ResponseMetadata"]["HTTPStatusCode"]
 
 def delete_image(image_name):
-    file_path = "/home/ubuntu/images/" + image_name + '.jpg'
+    file_path = "/home/ubuntu/images/" + image_name
     if os.path.exists(file_path):
         os.remove(file_path)
     else:
@@ -106,7 +109,6 @@ if __name__=="__main__":
         while (True):
             image_name, reciept_handle = read_message(request_queue_url)
             if image_name!=None and reciept_handle!=None :
-                image_name = image_name[0:-4]
                 file.write(f"Got message: {image_name}\n")
                 download_images_from_s3(input_bucket, image_name)
                 classify_images(image_name)
