@@ -83,7 +83,7 @@ def write_response_to_bucket(s3_bucket_name, image_name):
     lines = lines.split("\n")
     message_body = image_name + "," + lines[0].split(",")[1]
     s3_client = boto3.client("s3", aws_access_key_id=access_key, aws_secret_access_key=secret_key)
-    s3_client.put_object(Bucket = s3_bucket_name, Body=message_body, Key = image_name)
+    s3_client.put_object(Bucket = s3_bucket_name, Body=message_body, Key = image_file_name + '.txt')
 
 def delete_message_from_resuest_queue(queue_url,receipt_handle):
     sqs_client = boto3.client("sqs", region_name = "us-east-1", aws_access_key_id=access_key, aws_secret_access_key=secret_key)
