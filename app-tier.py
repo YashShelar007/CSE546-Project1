@@ -104,6 +104,8 @@ if __name__=="__main__":
         with open ('secret.txt', 'r') as f:
             secret_key = f.readline()
 
+        access_key = access_key.strip()
+        secret_key = secret_key.strip()
         file = open('output_results.txt', 'a')
         request_queue_url = get_sqs_url('cloudCrowd-request')
         response_queue_url = get_sqs_url('cloudCrowd-response')
