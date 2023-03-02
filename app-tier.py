@@ -108,8 +108,8 @@ if __name__=="__main__":
         request_queue_url = get_sqs_url('cloudCrowd-request')
         response_queue_url = get_sqs_url('cloudCrowd-response')
 
-        input_bucket = "cloudcrowd-input546"
-        output_bucket = "cloudcrowd-output546"
+        input_bucket = "cloudcroud-cse546-input"
+        output_bucket = "cloudcroud-cse546-output"
         file.write(f"Request-> {request_queue_url} response-> {response_queue_url}\n")
 
         while (True):
